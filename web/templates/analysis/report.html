@@ -49,6 +49,13 @@
             {% if analysis.memory %}
                 <li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>
             {% endif %}
+{% if config.malheur %}
+    {% if similar|length %}
+        <li><a href="#similar" data-toggle="tab">Similar ({{similar|length}})</a></li>
+    {% else %}
+        <li><a href="#similar" data-toggle="tab">Similar</a></li>
+    {% endif %}
+    {% endif %}
             {% if analysis.misp %}
                 <li><a href="#misp" data-toggle="tab">MISP ({{ analysis.misp|length }})</a></li>
             {% endif %}
@@ -85,6 +92,11 @@
         <div class="tab-pane fade" id="procmemory">
             {% include "analysis/procmemory/index.html" %}
         </div>
+    {% endif %}
+{% if config.malheur %}
+    <div class="tab-pane fade" id="similar">
+        {% include "analysis/similar/index.html" %}
+    </div>
     {% endif %}
     {% if analysis.memory %}
         <div class="tab-pane fade" id="memory">

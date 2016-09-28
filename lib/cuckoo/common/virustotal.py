@@ -8,6 +8,10 @@ import re
 
 try:
     import requests
+    proxies = {
+        'http': 'http://172.17.193.230:7006',
+        'https': 'http://172.17.193.230:7006',
+    }
     HAVE_REQUESTS = True
 
     # Disable requests/urllib3 debug & info messages.
@@ -83,7 +87,7 @@ class VirusTotalAPI(object):
                 "library (install with `pip install requests`)")
 
         try:
-            r = requests.post(url, timeout=self.timeout, **kwargs)
+            r = requests.post(url, timeout=self.timeout, proxies=proxies, **kwargs)
             return r.json() if r.status_code == 200 else {}
         except (requests.ConnectionError, ValueError) as e:
             raise CuckooOperationalError("Unable to fetch VirusTotal "

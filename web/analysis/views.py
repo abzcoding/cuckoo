@@ -277,6 +277,41 @@ def report(request, task_id):
         httpreplay_version = getattr(httpreplay, "__version__", None)
     except ImportError:
         httpreplay_version = None
+    similar = []
+    similarinfo = []
+    malheur_file = os.path.join(CUCKOO_ROOT, "storage", "malheur", "malheur.txt")
+    classes = dict()
+    ourclassname = None
+    try:
+        with open(malheur_file, "r") as malfile:
+            for line in malfile:
+                if line[0] == '#':
+                        continue
+                parts = line.strip().split(' ')
+                classname = parts[1]
+                if classname != "rejected":
+                    if classname not in classes:
+                        classes[classname] = []
+                    addval = dict()
+                    addval["id"] = parts[0][:-4]
+                    addval["proto"] = parts[2][:-4]
+                    addval["distance"] = parts[3]
+                    if addval["id"] == task_id:
+                        ourclassname = classname
+                    else:
+                        classes[classname].append(addval)
+        if ourclassname:
+            similar = classes[ourclassname]
+            for sim in similar:
+                siminfo = get_analysis_info(db, id=int(sim["id"]))
+                if siminfo:
+                    similarinfo.append(siminfo)
+            if similarinfo:
+                buf = sorted(similarinfo, key=lambda z: z["id"], reverse=True)
+                similarinfo = buf
+
+    except:
+        pass
 
     # Is this version of httpreplay deprecated?
     deprecated = httpreplay_version and \
@@ -286,6 +321,7 @@ def report(request, task_id):
         "analysis": report,
         "domainlookups": domainlookups,
         "iplookups": iplookups,
+        "similar": similarinfo,
         "httpreplay": {
             "have": HAVE_HTTPREPLAY,
             "deprecated": deprecated,
