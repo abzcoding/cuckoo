@@ -82,8 +82,14 @@ class ReportHTML(Report):
             ("regkey_written", "Registry Key", "Written"),
             ("mutex", "Mutex", "Accessed"),
         ]
-
         processed = {}
+        for item in results.get("target", {}).get("file", {}).get("yara", []):
+            item["strings"] = []
+        for item in results.get("dropped", {}):
+            for fi in item.get("yara", []):
+                fi["strings"] = []
+        for item in results.get("signatures", {}):
+            item["marks"] = []
         for proc in results.get("behavior", {}).get("generic", []):
             for orig, cat, subcat in mapping:
                 if cat not in processed:

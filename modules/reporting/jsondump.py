@@ -19,8 +19,21 @@ def default(obj):
         return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
     raise TypeError("%r is not JSON serializable" % obj)
 
+
 class JsonDump(Report):
     """Saves analysis results in JSON format."""
+    def erase_marks(self, results):
+        """removes marks from report.signatures by replacing them with empty lists."""
+        for item in results.get("signatures", {}):
+            item["marks"] = []
+
+    def erase_strings(self, results):
+        """removes strings from report.target by replacing them with empty lists."""
+        for item in results.get("target", {}).get("file", {}).get("yara", []):
+            item["strings"] = []
+        for item in results.get("dropped", {}):
+            for fi in item.get("yara", []):
+                fi["strings"] = []
 
     def erase_calls(self, results):
         """Temporarily removes calls from the report by replacing them with
@@ -59,7 +72,8 @@ class JsonDump(Report):
             self.calls = self.options.get("calls", True)
 
         self.erase_calls(results)
-
+        self.erase_marks(results)
+        self.erase_strings(results)
         try:
             path = os.path.join(self.reports_path, "report.json")
 
