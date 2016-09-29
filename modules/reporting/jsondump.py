@@ -12,6 +12,7 @@ import datetime
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
 
+
 def default(obj):
     if isinstance(obj, datetime.datetime):
         if obj.utcoffset() is not None:
@@ -26,6 +27,11 @@ class JsonDump(Report):
         """removes marks from report.signatures by replacing them with empty lists."""
         for item in results.get("signatures", {}):
             item["marks"] = []
+
+    def erase_modules(self, results):
+        """removes modules from report.behavior by replacing them with empty lists."""
+        for item in results.get("behavior", {}).get("processes", []):
+            item["modules"] = []
 
     def erase_strings(self, results):
         """removes strings from report.target by replacing them with empty lists."""
@@ -74,6 +80,7 @@ class JsonDump(Report):
         self.erase_calls(results)
         self.erase_marks(results)
         self.erase_strings(results)
+        self.erase_modules(results)
         try:
             path = os.path.join(self.reports_path, "report.json")
 
