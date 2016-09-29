@@ -1,8 +1,3 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
-# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-# See the file 'docs/LICENSE' for copying permission.
-
 import os
 import json
 import codecs
@@ -23,6 +18,13 @@ def default(obj):
 
 class JsonDump(Report):
     """Saves analysis results in JSON format."""
+    def add_severity(self, results):
+        """estimate posibility of being a virus"""
+        posibility_score = 0
+        for item in results.get("signatures", {}):
+            posibility_score += int(item["markcount"]) * int(item["severity"])
+        results["info"]["posibility_score"] = posibility_score
+
     def erase_marks(self, results):
         """removes marks from report.signatures by replacing them with empty lists."""
         for item in results.get("signatures", {}):
@@ -81,6 +83,7 @@ class JsonDump(Report):
         self.erase_marks(results)
         self.erase_strings(results)
         self.erase_modules(results)
+        self.add_severity(results)
         try:
             path = os.path.join(self.reports_path, "report.json")
 
